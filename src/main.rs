@@ -1,24 +1,28 @@
-use clap::Parser;
-use cli::Cli;
-
-use crate::app::App;
-
-mod action;
+mod ui;
 mod app;
-mod cli;
-mod components;
-mod config;
-mod errors;
-mod logging;
 mod tui;
+mod input;
+mod board;
 
-#[tokio::main]
-async fn main() -> color_eyre::Result<()> {
-    crate::errors::init()?;
-    crate::logging::init()?;
+use app::App;
+use tui::Tui;
 
-    let args = Cli::parse();
-    let mut app = App::new(args.tick_rate, args.frame_rate)?;
-    app.run().await?;
+// MAIN LOGIC
+fn main() -> color_eyre::Result<()> {
+    let mut tui = Tui::new()?;
+    tui.enter()?;
+
+    let mut app = App::new();
+    
+    while app.running {
+        tui.draw(|frame| {
+            ui::render(frame, &app);
+        })?;
+
+        input::handle_input(&mut app)?;
+    }
+
+    tui.exit();
+
     Ok(())
 }
