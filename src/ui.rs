@@ -1,10 +1,50 @@
 use ratatui::{
-    buffer::Buffer,
+    buffer::{Buffer, Cell},
     layout::Rect,
     prelude::*,
 };
 
-use crate::app::App;
+use crate::app::{self, App};
+use std::time::Duration;
+
+#[derive(Clone)]
+pub struct Theme {
+    pub grid: Color,
+
+    pub bg_light: Color,
+    pub bg_dark: Color,
+    pub bg_grid_highlight: Color,
+    pub bg_num_highlight: Color,
+    pub bg_selected: Color,
+    pub bg_invalid: Color,
+
+    pub number_fixed: Color,
+    pub number_user: Color,
+
+    pub note: Color,
+}
+
+impl Default for Theme {
+    fn default() -> Self {
+        Self {
+            grid: Color::Gray,
+
+            bg_light: Color::Rgb(40, 40, 40),
+            bg_dark: Color::Rgb(28, 28, 28),
+
+            bg_grid_highlight: Color::Rgb(60, 60, 60),
+            bg_num_highlight: Color::Rgb(90, 90, 90),
+            bg_selected: Color::Rgb(110, 110, 110),
+
+            bg_invalid: Color::Rgb(120, 20, 20),
+
+            number_fixed: Color::Cyan,
+            number_user: Color::White,
+
+            note: Color::DarkGray,
+        }
+    }
+}
 
 const CELL_WIDTH: u16 = 7;
 const CELL_HEIGHT: u16 = 4;
@@ -25,6 +65,92 @@ struct CellData {
 }
 
 pub fn render(frame: &mut Frame, app: &App) {
+    let chunks = Layout::default()
+    .direction(Direction::Horizontal)
+    .constraints([
+        Constraint::Length(70),
+        Constraint::Min(20),
+    ])
+    .split(frame.area());
+
+    render_board(frame, app, chunks[0]);
+    render_sidebar(frame, app, chunks[1]);
+}
+
+pub fn render_sidebar(frame: &mut Frame, app: &App, area: Rect) {
+    let buf = frame.buffer_mut();
+
+    buf.set_string(
+        area.x + 1,
+        area.y + 1,
+        "TUI Doku",
+        Style::default().fg(app.theme.number_fixed).add_modifier(Modifier::BOLD),
+    );
+
+    let elapsed = match app.end_time {
+        Some(end) => end,
+        None => app.start_time.elapsed(),
+    };
+
+    let timer = format!(
+        "Time: {}",
+        format_duration(elapsed),
+    );
+
+    buf.set_string(
+        area.x + 1,
+        area.y + 3,
+        timer,
+        Style::default().fg(app.theme.number_user),
+    );
+
+    let lines = [
+        "Use arrow keys to move",
+        "Press 1-9 to input numbers",
+        "Press Backspace to clear",
+        "Press 'q' to quit",
+    ];
+
+    for (i, line) in lines.iter().enumerate() {
+        buf.set_string(
+            area.x + 1,
+            area.y + 5 + i as u16,
+            *line,
+            Style::default().fg(app.theme.number_user),
+        );
+    }
+    let notes_text = if app.notes {
+        "Notes: ON (press 'n' to toggle)"
+    } else {
+        "Notes: OFF (press 'n' to toggle)"
+    };
+    buf.set_string(area.x + 1, area.y + 10, notes_text, Style::default().fg(app.theme.note));
+
+    if app.end_time.is_some() {
+        buf.set_string(
+            area.x + 1,
+            area.y + 14,
+            "Congratulations! You solved the puzzle!",
+            Style::default().fg(app.theme.number_fixed).add_modifier(Modifier::BOLD),
+        );
+    }
+}
+
+fn format_duration(duration: Duration) -> String {
+    let secs = duration.as_secs();
+
+    let hours = secs / 3600;
+    let mins = (secs % 3600) / 60;
+    let secs = secs % 60;
+
+    if hours > 0 {
+        format!("{hours:02}:{mins:02}:{secs:02}")
+    } else {
+        format!("{mins:02}:{secs:02}")
+    }
+}
+
+pub fn render_board(frame: &mut Frame, app: &App, area: Rect) {
     let visual_board = build_board(app);
 
     let area = frame.area();
@@ -43,6 +169,7 @@ pub fn render(frame: &mut Frame, app: &App) {
             };
 
             render_cell(
+                app,
                 buf,
                 rect,
                 row,
@@ -52,7 +179,7 @@ pub fn render(frame: &mut Frame, app: &App) {
         }
     }
 
-    draw_grid(buf, board_x, board_y);
+    draw_grid(app, buf, board_x, board_y);
 }
 
 fn build_board(app: &App) -> [[CellData; 9]; 9] {
@@ -78,6 +205,7 @@ fn build_board(app: &App) -> [[CellData; 9]; 9] {
 }
 
 fn render_cell(
+    app: &App,
     buf: &mut Buffer,
     area: Rect,
     row: usize,
@@ -85,17 +213,18 @@ fn render_cell(
     cell: &CellData,
 ) {
     draw_background(
+        app,
         buf,
         area,
         row,
         col,
-        cell.selected,
-        cell.is_valid,
+        cell
     );
 
     match cell.value {
         Some(value) => {
             draw_big_number(
+                app,
                 buf,
                 area,
                 value,
@@ -105,6 +234,7 @@ fn render_cell(
 
         None => {
             draw_notes(
+                app,
                 buf,
                 area,
                 &cell.notes,
@@ -114,26 +244,30 @@ fn render_cell(
 }
 
 fn draw_background(
+    app: &App,
     buf: &mut Buffer,
     area: Rect,
     row: usize,
     col: usize,
-    selected: bool,
-    is_valid: bool,
+    cell: &CellData,
 ) {
     let subgrid_x = col / 3;
     let subgrid_y = row / 3;
 
     let checker = (subgrid_x + subgrid_y) % 2 == 0;
 
-    let bg = if selected && is_valid {
-        Color::Blue
-    } else if !is_valid {
-        Color::Red
+    let bg = if cell.selected && cell.is_valid {
+        app.theme.bg_selected
+    } else if !cell.is_valid {
+        app.theme.bg_invalid
+    } else if cell.value.is_some() && cell.value == app.board.cells[app.selected_row][app.selected_col].value { // all numbers same as selected
+        app.theme.bg_num_highlight
+    } else if row == app.selected_row || col == app.selected_col {
+        app.theme.bg_grid_highlight
     } else if checker {
-        Color::Rgb(28, 28, 28)
+        app.theme.bg_dark
     } else {
-        Color::Rgb(40, 40, 40)
+        app.theme.bg_light
     };
 
     for y in area.y+1..area.y + area.height {
@@ -146,6 +280,7 @@ fn draw_background(
 }
 
 fn draw_notes(
+    app: &App,
     buf: &mut Buffer,
     area: Rect,
     notes: &[bool; 9],
@@ -162,12 +297,13 @@ fn draw_notes(
                     )
                     .unwrap(),
                 )
-                .set_fg(Color::DarkGray);
+                .set_fg(app.theme.note);
         }
     }
 }
 
 fn draw_big_number(
+    app: &App,
     buf: &mut Buffer,
     area: Rect,
     value: u8,
@@ -177,9 +313,9 @@ fn draw_big_number(
     let y = area.y + area.height / 2;
 
     let fg = if fixed {
-        Color::Cyan
+        app.theme.number_fixed
     } else {
-        Color::White
+        app.theme.number_user
     };
 
     let style = Style::default()
@@ -195,6 +331,7 @@ fn draw_big_number(
 }
 
 fn draw_grid(
+    app: &App,
     buf: &mut Buffer,
     board_x: u16,
     board_y: u16,
@@ -215,7 +352,7 @@ fn draw_grid(
         for x in board_x..=board_x + board_width {
             buf[(x, y)]
                 .set_char(horizontal)
-                .set_fg(Color::Gray);
+                .set_fg(app.theme.grid);
         }
     }
 
@@ -232,7 +369,7 @@ fn draw_grid(
         for y in board_y..=board_y + board_height {
             buf[(x, y)]
                 .set_char(vertical)
-                .set_fg(Color::Gray);
+                .set_fg(app.theme.grid);
         }
     }
 
@@ -281,7 +418,7 @@ fn draw_grid(
 
             buf[(x, y)]
                 .set_char(ch)
-                .set_fg(Color::Gray);
+                .set_fg(app.theme.grid);
         }
     }
 }
