@@ -20,6 +20,7 @@ fn main() -> color_eyre::Result<()> {
         })?;
 
         input::handle_input(&mut app)?;
+
     }
 
     tui.exit();

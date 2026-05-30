@@ -1,13 +1,35 @@
+use sudokugen::{BoardSize, Puzzle};
+
 #[derive(Clone, Copy, Debug)]
 pub struct Cell {
     pub value: Option<u8>,
     pub notes: [bool; 9],
     pub fixed: bool,
+    pub is_valid: bool,
 }
 
 #[derive(Clone, Copy, Debug)]
 pub struct Board {
     pub cells: [[Cell;9];9]
+}
+
+impl From<&sudokugen::Board> for Board {
+    fn from(src: &sudokugen::Board) -> Self {
+        let mut cells = [[Cell::empty(); 9]; 9];
+
+        for row in 0..9 {
+            for col in 0..9 {
+                let value = src.get(&src.cell_at(row, col));
+
+                cells[row][col] = match value {
+                    Some(v) => Cell::fixed(v),
+                    None => Cell::empty(),
+                };
+            }
+        }
+
+        Board::new(cells)
+    }
 }
 
 impl Cell {
@@ -16,6 +38,7 @@ impl Cell {
             value: None,
             notes: [false; 9],
             fixed: false,
+            is_valid: true,
         }
     }
     pub fn fixed(value: u8) -> Self {
@@ -23,13 +46,7 @@ impl Cell {
             value: Some(value),
             notes: [false; 9],
             fixed: true,
-        }
-    }
-    pub fn with_value(value: u8) -> Self {
-        Self {
-            value: Some(value),
-            notes: [false; 9],
-            fixed: false,
+            is_valid: true,
         }
     }
 }
@@ -46,108 +63,72 @@ impl Board {
     pub fn get_mut(&mut self, row: usize, col: usize) -> &mut Cell {
         &mut self.cells[row][col]
     }
+
+    pub fn is_complete(&self) -> bool {
+        for row in 0..9 {
+            for col in 0..9 {
+                if self.cells[row][col].value.is_none() {
+                    return false;
+                }
+            }
+        }
+        true
+    }
 }
 
-pub fn sample_board() -> Board {
-    Board::new([
-        [
-            Cell::fixed(5),
-            Cell::fixed(3),
-            Cell::empty(),
-            Cell::empty(),
-            Cell::fixed(7),
-            Cell::empty(),
-            Cell::empty(),
-            Cell::empty(),
-            Cell::empty(),
-        ],
-        [
-            Cell::fixed(6),
-            Cell::empty(),
-            Cell::empty(),
-            Cell::fixed(1),
-            Cell::fixed(9),
-            Cell::fixed(5),
-            Cell::empty(),
-            Cell::empty(),
-            Cell::empty(),
-        ],
-        [
-            Cell::empty(),
-            Cell::fixed(9),
-            Cell::fixed(8),
-            Cell::empty(),
-            Cell::empty(),
-            Cell::empty(),
-            Cell::empty(),
-            Cell::fixed(6),
-            Cell::empty(),
-        ],
-        [
-            Cell::fixed(8),
-            Cell::empty(),
-            Cell::empty(),
-            Cell::empty(),
-            Cell::fixed(6),
-            Cell::empty(),
-            Cell::empty(),
-            Cell::empty(),
-            Cell::fixed(3),
-        ],
-        [
-            Cell::fixed(4),
-            Cell::empty(),
-            Cell::empty(),
-            Cell::fixed(8),
-            Cell::empty(),
-            Cell::fixed(3),
-            Cell::empty(),
-            Cell::empty(),
-            Cell::fixed(1),
-        ],
-        [
-            Cell::fixed(7),
-            Cell::empty(),
-            Cell::empty(),
-            Cell::empty(),
-            Cell::fixed(2),
-            Cell::empty(),
-            Cell::empty(),
-            Cell::empty(),
-            Cell::fixed(6),
-        ],
-        [
-            Cell::empty(),
-            Cell::fixed(6),
-            Cell::empty(),
-            Cell::empty(),
-            Cell::empty(),
-            Cell::empty(),
-            Cell::fixed(2),
-            Cell::fixed(8),
-            Cell::empty(),
-        ],
-        [
-            Cell::empty(),
-            Cell::empty(),
-            Cell::empty(),
-            Cell::fixed(4),
-            Cell::fixed(1),
-            Cell::fixed(9),
-            Cell::empty(),
-            Cell::fixed(5),
-            Cell::empty(),
-        ],
-        [
-            Cell::empty(),
-            Cell::empty(),
-            Cell::empty(),
-            Cell::empty(),
-            Cell::fixed(8),
-            Cell::empty(),
-            Cell::empty(),
-            Cell::fixed(7),
-            Cell::fixed(9),
-        ],
-    ])
+pub fn generate_board() -> (Board, Board) {
+    let puzzle = Puzzle::generate(BoardSize::NineByNine);
+
+    let board = Board::from(puzzle.board());
+    let solution = Board::from(puzzle.solution());
+
+    (board, solution)
+
+}
+
+// BOARD LOGIC
+pub fn is_valid_box(board: &Board, value: u8, row: usize, col: usize) -> bool { 
+    for i in 0..3 { 
+        for j in 0..3 { 
+            if (board.cells[row + i][col + j].value == Some(value)) 
+            { return false; } 
+        } 
+    } return true; 
+}
+
+pub fn is_valid_row(board: &Board, value: u8, row: usize) -> bool { 
+    for col in 0..9 { 
+        if board.cells[row][col].value == Some(value) { 
+            return false; 
+        } 
+    } 
+    return true; 
+} 
+
+pub fn is_valid_col(board: &Board, value: u8, col: usize) -> bool { 
+    for row in 0..9 { 
+        if board.cells[row][col].value == Some(value) { 
+            return false; 
+        } 
+    } 
+    return true; 
+} 
+
+pub fn is_valid_num(board: &Board, value: u8, row: usize, col: usize) -> bool { 
+    is_valid_row(board, value, row) && 
+    is_valid_col(board, value, col) && 
+    is_valid_box(board, value, row - row % 3, col - col % 3) 
+}
+
+#[test]
+fn test_generate_board() {
+    let (board, solution) = generate_board();
+    assert_eq!(board.cells.len(), 9);
+    assert_eq!(solution.cells.len(), 9);
+    // for row in 0..9 {
+    //    for col in 0..9 {
+    //         dbg!(row, col, board.get(row, col).value, solution.get(row, col).value);
+    //     }
+    // }
+
 }

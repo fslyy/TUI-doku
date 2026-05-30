@@ -21,6 +21,7 @@ struct CellData {
     notes: [bool; 9],
     selected: bool,
     fixed: bool,
+    is_valid: bool,
 }
 
 pub fn render(frame: &mut Frame, app: &App) {
@@ -66,6 +67,8 @@ fn build_board(app: &App) -> [[CellData; 9]; 9] {
 
                 fixed: cell.fixed,
 
+                is_valid: cell.is_valid,
+
                 selected:
                     row == app.selected_row
                     && col == app.selected_col,
@@ -87,6 +90,7 @@ fn render_cell(
         row,
         col,
         cell.selected,
+        cell.is_valid,
     );
 
     match cell.value {
@@ -115,14 +119,17 @@ fn draw_background(
     row: usize,
     col: usize,
     selected: bool,
+    is_valid: bool,
 ) {
     let subgrid_x = col / 3;
     let subgrid_y = row / 3;
 
     let checker = (subgrid_x + subgrid_y) % 2 == 0;
 
-    let bg = if selected {
+    let bg = if selected && is_valid {
         Color::Blue
+    } else if !is_valid {
+        Color::Red
     } else if checker {
         Color::Rgb(28, 28, 28)
     } else {
