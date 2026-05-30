@@ -31,9 +31,18 @@ pub fn handle_input(app: &mut App) -> std::io::Result<()> {
                         app.selected_col += 1;
                     }
                 }
+                KeyCode::Backspace => {
+                    let cell = Board::get_mut(
+                        &mut app.board,
+                        app.selected_row,
+                        app.selected_col,
+                    );
+                    if !cell.fixed {
+                        cell.value = None;
+                    }
+                }
                 KeyCode::Char(c) if c.is_ascii_digit() => {
                     let digit = c.to_digit(10).unwrap() as u8;
-
                     if (1..=9).contains(&digit) {
                         let cell = Board::get_mut(
                             &mut app.board,
@@ -41,9 +50,17 @@ pub fn handle_input(app: &mut App) -> std::io::Result<()> {
                             app.selected_col,
                         );
                         if !cell.fixed {
-                            cell.value = Some(digit);
+                            if !app.notes {
+                                cell.value = Some(digit);
+                            }
+                            else {
+                                cell.notes[digit as usize - 1] = !cell.notes[digit as usize -1];  
+                            }
                         }
                     }
+                }
+                KeyCode::Char('n') => {
+                    app.notes = !app.notes;
                 }
                 _ => {}
             }
