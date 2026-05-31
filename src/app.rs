@@ -2,8 +2,14 @@ use crate::board::{Board, generate_board, is_valid_num};
 use crate::ui::Theme;
 use std::time::{Instant, Duration};
 
+pub enum Screen {
+    MainMenu,
+    Game,
+}
+
 pub struct App {
     pub running: bool,
+    pub screen: Screen,
     pub theme: Theme,
     pub board: Board,
     pub solution: Board,
@@ -20,6 +26,7 @@ impl App {
 
         Self {
             running: true,
+            screen: Screen::MainMenu,
             theme: Theme::default(),
             board,
             solution,

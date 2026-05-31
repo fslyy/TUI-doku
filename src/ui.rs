@@ -2,7 +2,9 @@ use ratatui::{
     buffer::{Buffer, Cell},
     layout::Rect,
     prelude::*,
+    
 };
+use tui_big_text::{BigText, PixelSize};
 
 use crate::app::{self, App};
 use std::time::Duration;
@@ -64,7 +66,65 @@ struct CellData {
     is_valid: bool,
 }
 
-pub fn render(frame: &mut Frame, app: &App) {
+pub fn render(frame: &mut Frame, app: &mut App) {
+    match app.screen {
+        app::Screen::MainMenu => render_main_menu(frame, app),
+        app::Screen::Game => render_game(frame, app),
+    }
+}
+
+pub fn render_main_menu(frame: &mut Frame, app: &App) {
+    let area = frame.area();
+
+    let [_, logo_row, text_area] = Layout::vertical([
+        Constraint::Length(10),  
+        Constraint::Length(10), 
+        Constraint::Min(0),
+    ])
+    .areas(area);
+
+    let [_, logo_area, _] = Layout::horizontal([
+        Constraint::Fill(1),
+        Constraint::Length(73),
+        Constraint::Fill(1),
+    ])
+    .areas(logo_row);
+
+    const Logo: &[&str] = &[
+        "╔══╤══╤══╗  ████████╗██╗   ██╗██╗      ██████╗  ██████╗ ██╗  ██╗██╗   ██╗",
+        "╟──┼──┼──╢  ╚══██╔══╝██║   ██║██║      ██╔══██╗██╔═══██╗██║ ██╔╝██║   ██║",
+        "╟──┼──┼──╠═╗   ██║   ██║   ██║██║█████╗██║  ██║██║   ██║█████╔╝ ██║   ██║",
+        "╚═╦╧═╤╧═╤╝─╢   ██║   ██║   ██║██║╚════╝██║  ██║██║   ██║██╔═██╗ ██║   ██║",
+        "  ╟──┼──┼──╢   ██║   ╚██████╔╝██║      ██████╔╝╚██████╔╝██║  ██╗╚██████╔╝",
+        "  ╚══╧══╧══╝   ╚═╝    ╚═════╝ ╚═╝      ╚═════╝  ╚═════╝ ╚═╝  ╚═╝ ╚═════╝ ",
+    ];
+
+    let prompt = ["[N] New Game", 
+                             "[Q] Quit"];
+
+    let buf = frame.buffer_mut();
+
+    for (i, line) in Logo.iter().enumerate() {
+        buf.set_string(
+            logo_area.x + logo_area.width / 2 - 37,
+            logo_area.y + i as u16,
+            *line,
+            Style::default().fg(app.theme.number_fixed).add_modifier(Modifier::BOLD),
+        );
+    }
+
+    for (i, line) in prompt.iter().enumerate() {
+        buf.set_string(
+            text_area.x + text_area.width / 2 - 10,
+            text_area.y + 2 + i as u16,
+            *line,
+            Style::default()
+            .fg(app.theme.number_user),
+        );
+    }
+}
+
+pub fn render_game(frame: &mut Frame, app: &App) {
     let chunks = Layout::default()
     .direction(Direction::Horizontal)
     .constraints([

@@ -1,11 +1,30 @@
 use crossterm::event::{self, Event, KeyCode};
 use std::time::Duration;
 
-use crate::{app::App, board::Board};
+use crate::{app::App, board::Board, app::Screen, board::generate_board};
 
 // INPUT LOGIC
 pub fn handle_input(app: &mut App) -> std::io::Result<()> {
     if event::poll(Duration::from_millis(50))? {
+        match app.screen {
+            Screen::MainMenu => {
+                if let Event::Key(key) = event::read()? {
+                    match key.code {
+                        KeyCode::Char('n') => {
+                            let (board, solution) = generate_board();
+                            app.board = board;
+                            app.solution = solution;
+                            app.screen = Screen::Game;
+                            app.start_time = std::time::Instant::now();
+                        }
+                        KeyCode::Char('q') => {
+                            app.running = false;
+                        }
+                        _ => {}
+                    }
+                }
+            }
+            Screen::Game => {
     if let Event::Key(key) = event::read()? {
             match key.code {
                 KeyCode::Char('q') => {
@@ -46,6 +65,8 @@ pub fn handle_input(app: &mut App) -> std::io::Result<()> {
                 _ => {}
             }
         }
+    }
+}
     }
 
     Ok(())

@@ -16,7 +16,7 @@ fn main() -> color_eyre::Result<()> {
     
     while app.running {
         tui.draw(|frame| {
-            ui::render(frame, &app);
+            ui::render(frame, &mut app);
         })?;
 
         input::handle_input(&mut app)?;
