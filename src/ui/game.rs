@@ -1,52 +1,12 @@
 use ratatui::{
-    buffer::{Buffer, Cell},
+    buffer::Buffer,
     layout::Rect,
-    prelude::*,
+    prelude::*, widgets::{Block, Borders, Paragraph},
     
 };
-use tui_big_text::{BigText, PixelSize};
 
-use crate::app::{self, App};
+use crate::app::App;
 use std::time::Duration;
-
-#[derive(Clone)]
-pub struct Theme {
-    pub grid: Color,
-
-    pub bg_light: Color,
-    pub bg_dark: Color,
-    pub bg_grid_highlight: Color,
-    pub bg_num_highlight: Color,
-    pub bg_selected: Color,
-    pub bg_invalid: Color,
-
-    pub number_fixed: Color,
-    pub number_user: Color,
-
-    pub note: Color,
-}
-
-impl Default for Theme {
-    fn default() -> Self {
-        Self {
-            grid: Color::Gray,
-
-            bg_light: Color::Rgb(40, 40, 40),
-            bg_dark: Color::Rgb(28, 28, 28),
-
-            bg_grid_highlight: Color::Rgb(60, 60, 60),
-            bg_num_highlight: Color::Rgb(90, 90, 90),
-            bg_selected: Color::Rgb(110, 110, 110),
-
-            bg_invalid: Color::Rgb(120, 20, 20),
-
-            number_fixed: Color::Cyan,
-            number_user: Color::White,
-
-            note: Color::DarkGray,
-        }
-    }
-}
 
 const CELL_WIDTH: u16 = 7;
 const CELL_HEIGHT: u16 = 4;
@@ -66,65 +26,7 @@ struct CellData {
     is_valid: bool,
 }
 
-pub fn render(frame: &mut Frame, app: &mut App) {
-    match app.screen {
-        app::Screen::MainMenu => render_main_menu(frame, app),
-        app::Screen::Game => render_game(frame, app),
-    }
-}
-
-pub fn render_main_menu(frame: &mut Frame, app: &App) {
-    let area = frame.area();
-
-    let [_, logo_row, text_area] = Layout::vertical([
-        Constraint::Length(10),  
-        Constraint::Length(10), 
-        Constraint::Min(0),
-    ])
-    .areas(area);
-
-    let [_, logo_area, _] = Layout::horizontal([
-        Constraint::Fill(1),
-        Constraint::Length(73),
-        Constraint::Fill(1),
-    ])
-    .areas(logo_row);
-
-    const Logo: &[&str] = &[
-        "╔══╤══╤══╗  ████████╗██╗   ██╗██╗      ██████╗  ██████╗ ██╗  ██╗██╗   ██╗",
-        "╟──┼──┼──╢  ╚══██╔══╝██║   ██║██║      ██╔══██╗██╔═══██╗██║ ██╔╝██║   ██║",
-        "╟──┼──┼──╠═╗   ██║   ██║   ██║██║█████╗██║  ██║██║   ██║█████╔╝ ██║   ██║",
-        "╚═╦╧═╤╧═╤╝─╢   ██║   ██║   ██║██║╚════╝██║  ██║██║   ██║██╔═██╗ ██║   ██║",
-        "  ╟──┼──┼──╢   ██║   ╚██████╔╝██║      ██████╔╝╚██████╔╝██║  ██╗╚██████╔╝",
-        "  ╚══╧══╧══╝   ╚═╝    ╚═════╝ ╚═╝      ╚═════╝  ╚═════╝ ╚═╝  ╚═╝ ╚═════╝ ",
-    ];
-
-    let prompt = ["[N] New Game", 
-                             "[Q] Quit"];
-
-    let buf = frame.buffer_mut();
-
-    for (i, line) in Logo.iter().enumerate() {
-        buf.set_string(
-            logo_area.x + logo_area.width / 2 - 37,
-            logo_area.y + i as u16,
-            *line,
-            Style::default().fg(app.theme.number_fixed).add_modifier(Modifier::BOLD),
-        );
-    }
-
-    for (i, line) in prompt.iter().enumerate() {
-        buf.set_string(
-            text_area.x + text_area.width / 2 - 10,
-            text_area.y + 2 + i as u16,
-            *line,
-            Style::default()
-            .fg(app.theme.number_user),
-        );
-    }
-}
-
-pub fn render_game(frame: &mut Frame, app: &App) {
+pub fn render(frame: &mut Frame, app: &App) {
     let chunks = Layout::default()
     .direction(Direction::Horizontal)
     .constraints([
@@ -135,6 +37,11 @@ pub fn render_game(frame: &mut Frame, app: &App) {
 
     render_board(frame, app, chunks[0]);
     render_sidebar(frame, app, chunks[1]);
+
+    if app.game_paused {
+        render_pause_overlay(frame, app);
+    }
+
 }
 
 pub fn render_sidebar(frame: &mut Frame, app: &App, area: Rect) {
@@ -147,10 +54,7 @@ pub fn render_sidebar(frame: &mut Frame, app: &App, area: Rect) {
         Style::default().fg(app.theme.number_fixed).add_modifier(Modifier::BOLD),
     );
 
-    let elapsed = match app.end_time {
-        Some(end) => end,
-        None => app.start_time.elapsed(),
-    };
+    let elapsed = app.timer.elapsed();
 
     let timer = format!(
         "Time: {}",
@@ -164,14 +68,17 @@ pub fn render_sidebar(frame: &mut Frame, app: &App, area: Rect) {
         Style::default().fg(app.theme.number_user),
     );
 
-    let lines = [
-        "Use arrow keys to move",
-        "Press 1-9 to input numbers",
-        "Press Backspace to clear",
-        "Press 'q' to quit",
+    let control_lines = [
+        "[↑/↓/←/→] Move",
+        "[1-9] input numbers",
+        "[Backspace] clear cell",
+        "[Q] quit",
+        "[N] switch to note mode",
+        "[P] pause timer",
+        "[Esc] return to main menu",
     ];
 
-    for (i, line) in lines.iter().enumerate() {
+    for (i, line) in control_lines.iter().enumerate() {
         buf.set_string(
             area.x + 1,
             area.y + 5 + i as u16,
@@ -179,20 +86,26 @@ pub fn render_sidebar(frame: &mut Frame, app: &App, area: Rect) {
             Style::default().fg(app.theme.number_user),
         );
     }
-    let notes_text = if app.notes {
-        "Notes: ON (press 'n' to toggle)"
+    let notes_text = if app.notes_mode {
+        "Notes: ON"
     } else {
-        "Notes: OFF (press 'n' to toggle)"
+        "Notes: OFF"
     };
-    buf.set_string(area.x + 1, area.y + 10, notes_text, Style::default().fg(app.theme.note));
+    buf.set_string(area.x + 1, area.y + 13, notes_text, Style::default().fg(app.theme.note));
 
-    if app.end_time.is_some() {
-        buf.set_string(
-            area.x + 1,
-            area.y + 14,
-            "Congratulations! You solved the puzzle!",
-            Style::default().fg(app.theme.number_fixed).add_modifier(Modifier::BOLD),
-        );
+    let victory_lines = [
+        "Congratulations! You solved the puzzle!",
+        "[Enter] Start new game",
+    ];
+    if app.win {
+        for (i, line) in victory_lines.iter().enumerate() {
+            buf.set_string(
+                area.x + 1,
+                area.y + 15 + i as u16,
+                *line,
+                Style::default().fg(app.theme.number_fixed).add_modifier(Modifier::BOLD),
+            );
+        }
     }
 }
 
@@ -208,6 +121,44 @@ fn format_duration(duration: Duration) -> String {
     } else {
         format!("{mins:02}:{secs:02}")
     }
+}
+
+pub fn render_pause_overlay(frame: &mut Frame, app: &App) {
+    let area = frame.area();
+    let buf = frame.buffer_mut();
+
+    let overlay = Rect {
+        x: area.x + area.width / 4,
+        y: area.y + area.height / 3,
+        width: area.width / 2,
+        height: area.height / 3,
+    };
+
+    for y in overlay.y..overlay.y + overlay.height {
+        for x in overlay.x..overlay.x + overlay.width {
+            buf[(x, y)]
+            .set_char(' ')
+                .set_bg(app.theme.bg_grid_highlight);
+        }
+    }
+
+    let pause = r#"
+██████╗  █████╗ ██╗   ██╗███████╗███████╗██████╗
+██╔══██╗██╔══██╗██║   ██║██╔════╝██╔════╝██╔══██╗
+██████╔╝███████║██║   ██║███████╗█████╗  ██║  ██║
+██╔═══╝ ██╔══██║██║   ██║╚════██║██╔══╝  ██║  ██║
+██║     ██║  ██║╚██████╔╝███████║███████╗██████╔╝
+╚═╝     ╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚══════╝╚═════╝
+
+Press P to resume
+"#;
+
+    let popup = Paragraph::new(pause)
+        .alignment(Alignment::Center)
+        .style(Style::default().fg(app.theme.number_fixed).add_modifier(Modifier::BOLD))
+        .block(Block::default().borders(Borders::ALL));
+
+    frame.render_widget(popup, overlay);
 }
 
 pub fn render_board(frame: &mut Frame, app: &App, area: Rect) {

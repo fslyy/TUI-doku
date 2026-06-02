@@ -1,11 +1,14 @@
 mod ui;
 mod app;
 mod tui;
-mod input;
 mod board;
+mod Input;
+mod timer;
 
 use app::App;
 use tui::Tui;
+
+use app::Screen;
 
 // MAIN LOGIC
 fn main() -> color_eyre::Result<()> {
@@ -16,10 +19,18 @@ fn main() -> color_eyre::Result<()> {
     
     while app.running {
         tui.draw(|frame| {
-            ui::render(frame, &mut app);
+            match app.screen {
+                Screen::MainMenu => ui::mainmenu::render(frame, &mut app),
+                Screen::Game => ui::game::render(frame, &mut app),
+                _ => {}
+            }
         })?;
 
-        input::handle_input(&mut app)?;
+        match app.screen {
+            Screen::MainMenu => Input::mainmenu::handle_input(&mut app),
+            Screen::Game => Input::game::handle_input(&mut app),
+            _ => Ok(()),
+        }?
 
     }
 
