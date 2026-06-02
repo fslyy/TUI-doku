@@ -40,23 +40,27 @@ impl App {
 
     pub fn on_digit(&mut self, c: char) {
         let digit = c.to_digit(10).unwrap() as u8;
-        let is_valid = is_valid_num(&self.board, digit, self.selected_row, self.selected_col);
-
+        let board = self.board;
         let cell = Board::get_mut(
             &mut self.board,
             self.selected_row,
             self.selected_col,
         );
         
-        if !cell.fixed {
-            if self.notes {
-                cell.notes[(digit - 1) as usize] = !cell.notes[(digit - 1) as usize];
-            } else {
-                cell.value = Some(digit);
-                cell.is_valid = is_valid;
-                if Board::is_complete(&self.board) {
-                    self.check_win();
-                }
+        if cell.fixed {
+            return;
+        }
+ 
+        if self.notes {
+            cell.notes[(digit - 1) as usize] = !cell.notes[(digit - 1) as usize];
+        } else {
+            cell.value = None;
+            let is_valid = is_valid_num(&board, digit, self.selected_row, self.selected_col);
+
+            cell.value = Some(digit);
+            cell.is_valid = is_valid;
+            if Board::is_complete(&self.board) {
+                self.check_win();
             }
         }
     }
@@ -83,7 +87,6 @@ impl App {
                 }
             }
         }
-        dbg!("You win!");
         self.end_time = Some(self.start_time.elapsed());
     }
 }
