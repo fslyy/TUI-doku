@@ -51,6 +51,9 @@ pub fn handle_input(app: &mut App) -> std::io::Result<()> {
                         app.pause_game();
                     }
                     KeyCode::Char('q') => {
+                        if !app.win {
+                            app.save_game();
+                        }
                         app.running = false;
                     }
                     KeyCode::Esc => {

@@ -1,6 +1,9 @@
-use crate::board::{Board, Cell, generate_board, is_valid_num};
+use crossterm::event::KeyCode::Null;
+
+use crate::board::{Board, Cell, generate_board, is_valid_num, solve_board};
 use crate::ui::theme::Theme;
 use crate::timer::GameTimer;
+use crate::save::{self, GameSave, load_game_state, save_game_state};
 
 pub enum Screen {
     MainMenu,
@@ -44,6 +47,33 @@ impl App {
         }
     }
 
+    pub fn save_game(&mut self) {
+        self.timer.pause();
+        save_game_state(&GameSave::new(self.board, self.selected_row, self.selected_col, self.timer.elapsed().as_secs()));
+    }
+
+    pub fn load_game(&mut self) {
+        match load_game_state() {
+            Ok(save) => {
+                self.board = save.board;
+                self.solution = solve_board(&save.board);
+
+                self.selected_col = save.selected_col;
+                self.selected_row = save.selected_row;
+
+                self.timer.start(Some(save.elapsed_seconds));
+
+                self.win = false;
+                self.screen = Screen::Game;
+            }
+
+            Err(err) => {
+                self.start_game();
+                println!("{:?}", err.to_string());
+            }
+        }
+    }
+
     pub fn start_game(&mut self) {
         let (board, solution) = generate_board();
         self.board = board;
@@ -54,7 +84,7 @@ impl App {
         self.selected_col = 0;
 
         self.timer.reset();
-        self.timer.start();
+        self.timer.start(None);
         self.win = false;
     }
 

@@ -1,6 +1,7 @@
 use sudokugen::{BoardSize, Puzzle};
+use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Serialize, Deserialize, Clone, Copy, Debug)]
 pub struct Cell {
     pub value: Option<u8>,
     pub notes: [bool; 9],
@@ -8,7 +9,7 @@ pub struct Cell {
     pub is_valid: bool,
 }
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Serialize, Deserialize, Clone, Copy, Debug)]
 pub struct Board {
     pub cells: [[Cell;9];9]
 }
@@ -29,6 +30,23 @@ impl From<&sudokugen::Board> for Board {
         }
 
         Board::new(cells)
+    }
+}
+
+impl From<&Board> for sudokugen::Board {
+    fn from(src: &Board) -> Self {
+        let mut board = sudokugen::Board::new(BoardSize::NineByNine);
+
+        for row in 0..9 {
+            for col in 0..9 {
+                if let Some(value) = src.cells[row][col].value {
+                    let cell = board.cell_at(row, col);
+                    board.set(&cell, value);
+                }
+            }
+        }
+
+        board
     }
 }
 
@@ -84,6 +102,23 @@ pub fn generate_board() -> (Board, Board) {
 
     (board, solution)
 
+}
+
+pub fn solve_board(board: &Board) -> Board {
+    let mut puzzle = board.clone();
+
+    for row in 0..9 {
+        for col in 0..9 {
+            let cell = &mut puzzle.cells[row][col];
+            if cell.fixed == false {
+                cell.value = None;
+            }
+        }
+    }
+    
+    let mut solver_board = sudokugen::Board::from(&puzzle);
+    solver_board.solve().unwrap(); 
+    Board::from(&solver_board)
 }
 
 // BOARD LOGIC

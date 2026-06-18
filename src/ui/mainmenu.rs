@@ -1,6 +1,6 @@
 use ratatui::prelude::*;
 
-use crate::app::App;
+use crate::{app::App, save::load_game_state};
 
 pub fn render(frame: &mut Frame, app: &App) {
     let area = frame.area();
@@ -28,8 +28,15 @@ pub fn render(frame: &mut Frame, app: &App) {
         "  ╚══╧══╧══╝   ╚═╝    ╚═════╝ ╚═╝      ╚═════╝  ╚═════╝ ╚═╝  ╚═╝ ╚═════╝ ",
     ];
 
-    let prompt = ["[N] New Game", 
-                             "[Q] Quit"];
+    let mut prompt = ["[N] New Game", 
+                             "[Q] Quit",
+                             ""];
+
+    if load_game_state().is_ok() {
+        prompt = ["[C] Continue",
+                "[N] New Game", 
+                "[Q] Quit"];
+    }
 
     let buf = frame.buffer_mut();
 

@@ -16,9 +16,9 @@ impl GameTimer {
         }
     }
 
-    pub fn start(&mut self) {
+    pub fn start(&mut self, elapsed: Option<u64>) {
         self.start_time = Some(Instant::now());
-        self.elapsed = Duration::from_secs(0);
+        self.elapsed = Duration::from_secs(elapsed.unwrap_or(0));
         self.paused = false;
     }
 

@@ -1,6 +1,7 @@
 mod ui;
 mod app;
 mod tui;
+mod save;
 mod board;
 mod Input;
 mod timer;
@@ -21,20 +22,20 @@ fn main() -> color_eyre::Result<()> {
         tui.draw(|frame| {
             match app.screen {
                 Screen::MainMenu => ui::mainmenu::render(frame, &mut app),
-                Screen::Game => ui::game::render(frame, &mut app),
-                _ => {}
+                Screen::Game => ui::game::render(frame, &mut app)
             }
         })?;
 
         match app.screen {
             Screen::MainMenu => Input::mainmenu::handle_input(&mut app),
-            Screen::Game => Input::game::handle_input(&mut app),
-            _ => Ok(()),
+            Screen::Game => Input::game::handle_input(&mut app)
         }?
 
     }
 
-    tui.exit();
+    //TO-DO: persistent game safe (save board state )
+
+    let _ = tui.exit();
 
     Ok(())
 }

@@ -72,7 +72,7 @@ pub fn render_sidebar(frame: &mut Frame, app: &App, area: Rect) {
         "[↑/↓/←/→] Move",
         "[1-9] input numbers",
         "[Backspace] clear cell",
-        "[Q] quit",
+        "[Q] quit and save",
         "[N] switch to note mode",
         "[P] pause timer",
         "[Esc] return to main menu",
