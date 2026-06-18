@@ -1,8 +1,8 @@
 use ratatui::{
     buffer::Buffer,
     layout::Rect,
-    prelude::*, widgets::{Block, Borders, Paragraph},
-    
+    prelude::*,
+    widgets::{Block, Borders, Paragraph},
 };
 
 use crate::app::App;
@@ -12,9 +12,15 @@ const CELL_WIDTH: u16 = 7;
 const CELL_HEIGHT: u16 = 4;
 
 const NOTE_POSITIONS: [(u16, u16); 9] = [
-    (1, 1), (3, 1), (5, 1),
-    (1, 2), (3, 2), (5, 2),
-    (1, 3), (3, 3), (5, 3),
+    (1, 1),
+    (3, 1),
+    (5, 1),
+    (1, 2),
+    (3, 2),
+    (5, 2),
+    (1, 3),
+    (3, 3),
+    (5, 3),
 ];
 
 #[derive(Clone, Copy)]
@@ -28,12 +34,9 @@ struct CellData {
 
 pub fn render(frame: &mut Frame, app: &App) {
     let chunks = Layout::default()
-    .direction(Direction::Horizontal)
-    .constraints([
-        Constraint::Length(70),
-        Constraint::Min(20),
-    ])
-    .split(frame.area());
+        .direction(Direction::Horizontal)
+        .constraints([Constraint::Length(70), Constraint::Min(20)])
+        .split(frame.area());
 
     render_board(frame, app, chunks[0]);
     render_sidebar(frame, app, chunks[1]);
@@ -41,7 +44,6 @@ pub fn render(frame: &mut Frame, app: &App) {
     if app.game_paused {
         render_pause_overlay(frame, app);
     }
-
 }
 
 pub fn render_sidebar(frame: &mut Frame, app: &App, area: Rect) {
@@ -51,15 +53,14 @@ pub fn render_sidebar(frame: &mut Frame, app: &App, area: Rect) {
         area.x + 1,
         area.y + 1,
         "TUI Doku",
-        Style::default().fg(app.theme.number_fixed).add_modifier(Modifier::BOLD),
+        Style::default()
+            .fg(app.theme.number_fixed)
+            .add_modifier(Modifier::BOLD),
     );
 
     let elapsed = app.timer.elapsed();
 
-    let timer = format!(
-        "Time: {}",
-        format_duration(elapsed),
-    );
+    let timer = format!("Time: {}", format_duration(elapsed),);
 
     buf.set_string(
         area.x + 1,
@@ -91,7 +92,12 @@ pub fn render_sidebar(frame: &mut Frame, app: &App, area: Rect) {
     } else {
         "Notes: OFF"
     };
-    buf.set_string(area.x + 1, area.y + 13, notes_text, Style::default().fg(app.theme.note));
+    buf.set_string(
+        area.x + 1,
+        area.y + 13,
+        notes_text,
+        Style::default().fg(app.theme.note),
+    );
 
     let victory_lines = [
         "Congratulations! You solved the puzzle!",
@@ -103,7 +109,9 @@ pub fn render_sidebar(frame: &mut Frame, app: &App, area: Rect) {
                 area.x + 1,
                 area.y + 15 + i as u16,
                 *line,
-                Style::default().fg(app.theme.number_fixed).add_modifier(Modifier::BOLD),
+                Style::default()
+                    .fg(app.theme.number_fixed)
+                    .add_modifier(Modifier::BOLD),
             );
         }
     }
@@ -137,7 +145,7 @@ pub fn render_pause_overlay(frame: &mut Frame, app: &App) {
     for y in overlay.y..overlay.y + overlay.height {
         for x in overlay.x..overlay.x + overlay.width {
             buf[(x, y)]
-            .set_char(' ')
+                .set_char(' ')
                 .set_bg(app.theme.bg_grid_highlight);
         }
     }
@@ -155,7 +163,11 @@ Press P to resume
 
     let popup = Paragraph::new(pause)
         .alignment(Alignment::Center)
-        .style(Style::default().fg(app.theme.number_fixed).add_modifier(Modifier::BOLD))
+        .style(
+            Style::default()
+                .fg(app.theme.number_fixed)
+                .add_modifier(Modifier::BOLD),
+        )
         .block(Block::default().borders(Borders::ALL));
 
     frame.render_widget(popup, overlay);
@@ -179,14 +191,7 @@ pub fn render_board(frame: &mut Frame, app: &App, area: Rect) {
                 height: CELL_HEIGHT,
             };
 
-            render_cell(
-                app,
-                buf,
-                rect,
-                row,
-                col,
-                &visual_board[row][col],
-            );
+            render_cell(app, buf, rect, row, col, &visual_board[row][col]);
         }
     }
 
@@ -207,49 +212,22 @@ fn build_board(app: &App) -> [[CellData; 9]; 9] {
 
                 is_valid: cell.is_valid,
 
-                selected:
-                    row == app.selected_row
-                    && col == app.selected_col,
+                selected: row == app.selected_row && col == app.selected_col,
             }
         })
     })
 }
 
-fn render_cell(
-    app: &App,
-    buf: &mut Buffer,
-    area: Rect,
-    row: usize,
-    col: usize,
-    cell: &CellData,
-) {
-    draw_background(
-        app,
-        buf,
-        area,
-        row,
-        col,
-        cell
-    );
+fn render_cell(app: &App, buf: &mut Buffer, area: Rect, row: usize, col: usize, cell: &CellData) {
+    draw_background(app, buf, area, row, col, cell);
 
     match cell.value {
         Some(value) => {
-            draw_big_number(
-                app,
-                buf,
-                area,
-                value,
-                cell.fixed,
-            );
+            draw_big_number(app, buf, area, value, cell.fixed);
         }
 
         None => {
-            draw_notes(
-                app,
-                buf,
-                area,
-                &cell.notes,
-            );
+            draw_notes(app, buf, area, &cell.notes);
         }
     }
 }
@@ -271,7 +249,10 @@ fn draw_background(
         app.theme.bg_selected
     } else if !cell.is_valid {
         app.theme.bg_invalid
-    } else if cell.value.is_some() && cell.value == app.board.cells[app.selected_row][app.selected_col].value { // all numbers same as selected
+    } else if cell.value.is_some()
+        && cell.value == app.board.cells[app.selected_row][app.selected_col].value
+    {
+        // all numbers same as selected
         app.theme.bg_num_highlight
     } else if row == app.selected_row || col == app.selected_col {
         app.theme.bg_grid_highlight
@@ -281,45 +262,26 @@ fn draw_background(
         app.theme.bg_light
     };
 
-    for y in area.y+1..area.y + area.height {
-        for x in area.x+1..area.x + area.width {
-            buf[(x, y)]
-                .set_char(' ')
-                .set_bg(bg);
+    for y in area.y + 1..area.y + area.height {
+        for x in area.x + 1..area.x + area.width {
+            buf[(x, y)].set_char(' ').set_bg(bg);
         }
     }
 }
 
-fn draw_notes(
-    app: &App,
-    buf: &mut Buffer,
-    area: Rect,
-    notes: &[bool; 9],
-) {
+fn draw_notes(app: &App, buf: &mut Buffer, area: Rect, notes: &[bool; 9]) {
     for i in 0..9 {
         if notes[i] {
             let (dx, dy) = NOTE_POSITIONS[i];
 
             buf[(area.x + dx, area.y + dy)]
-                .set_char(
-                    char::from_digit(
-                        (i + 1) as u32,
-                        10,
-                    )
-                    .unwrap(),
-                )
+                .set_char(char::from_digit((i + 1) as u32, 10).unwrap())
                 .set_fg(app.theme.note);
         }
     }
 }
 
-fn draw_big_number(
-    app: &App,
-    buf: &mut Buffer,
-    area: Rect,
-    value: u8,
-    fixed: bool,
-) {
+fn draw_big_number(app: &App, buf: &mut Buffer, area: Rect, value: u8, fixed: bool) {
     let x = area.x + area.width / 2;
     let y = area.y + area.height / 2;
 
@@ -329,24 +291,12 @@ fn draw_big_number(
         app.theme.number_user
     };
 
-    let style = Style::default()
-        .fg(fg)
-        .add_modifier(Modifier::BOLD);
+    let style = Style::default().fg(fg).add_modifier(Modifier::BOLD);
 
-    buf.set_string(
-        x,
-        y,
-        value.to_string(),
-        style,
-    );
+    buf.set_string(x, y, value.to_string(), style);
 }
 
-fn draw_grid(
-    app: &App,
-    buf: &mut Buffer,
-    board_x: u16,
-    board_y: u16,
-) {
+fn draw_grid(app: &App, buf: &mut Buffer, board_x: u16, board_y: u16) {
     let board_width = CELL_WIDTH * 9;
     let board_height = CELL_HEIGHT * 9;
 
@@ -357,13 +307,11 @@ fn draw_grid(
         let y = board_y + row * CELL_HEIGHT;
 
         let thick = row % 3 == 0;
- 
+
         let horizontal = if thick { '═' } else { '─' };
 
         for x in board_x..=board_x + board_width {
-            buf[(x, y)]
-                .set_char(horizontal)
-                .set_fg(app.theme.grid);
+            buf[(x, y)].set_char(horizontal).set_fg(app.theme.grid);
         }
     }
 
@@ -374,13 +322,11 @@ fn draw_grid(
         let x = board_x + col * CELL_WIDTH;
 
         let thick = col % 3 == 0;
- 
+
         let vertical = if thick { '║' } else { '│' };
 
         for y in board_y..=board_y + board_height {
-            buf[(x, y)]
-                .set_char(vertical)
-                .set_fg(app.theme.grid);
+            buf[(x, y)].set_char(vertical).set_fg(app.theme.grid);
         }
     }
 
@@ -395,12 +341,7 @@ fn draw_grid(
             let thick_row = row % 3 == 0;
             let thick_col = col % 3 == 0;
 
-            let ch = match (
-                row,
-                col,
-                thick_row,
-                thick_col,
-            ) {
+            let ch = match (row, col, thick_row, thick_col) {
                 (0, 0, _, _) => '╔',
                 (0, 9, _, _) => '╗',
                 (9, 0, _, _) => '╚',
@@ -427,9 +368,7 @@ fn draw_grid(
                 _ => '┼',
             };
 
-            buf[(x, y)]
-                .set_char(ch)
-                .set_fg(app.theme.grid);
+            buf[(x, y)].set_char(ch).set_fg(app.theme.grid);
         }
     }
 }

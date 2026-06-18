@@ -1,9 +1,9 @@
 use crossterm::event::KeyCode::Null;
 
 use crate::board::{Board, Cell, generate_board, is_valid_num, solve_board};
-use crate::ui::theme::Theme;
-use crate::timer::GameTimer;
 use crate::save::{self, GameSave, load_game_state, save_game_state};
+use crate::timer::GameTimer;
+use crate::ui::theme::Theme;
 
 pub enum Screen {
     MainMenu,
@@ -32,8 +32,7 @@ impl App {
         Self {
             running: true,
             screen: Screen::MainMenu,
-            theme: Theme::default()
-            ,
+            theme: Theme::default(),
             board: Board::new([[Cell::empty(); 9]; 9]),
             solution: Board::new([[Cell::empty(); 9]; 9]),
 
@@ -49,7 +48,12 @@ impl App {
 
     pub fn save_game(&mut self) {
         self.timer.pause();
-        save_game_state(&GameSave::new(self.board, self.selected_row, self.selected_col, self.timer.elapsed().as_secs()));
+        save_game_state(&GameSave::new(
+            self.board,
+            self.selected_row,
+            self.selected_col,
+            self.timer.elapsed().as_secs(),
+        ));
     }
 
     pub fn load_game(&mut self) {
@@ -79,7 +83,7 @@ impl App {
         self.board = board;
         self.solution = solution;
         self.screen = Screen::Game;
-        
+
         self.selected_row = 0;
         self.selected_col = 0;
 
@@ -103,30 +107,18 @@ impl App {
         if self.board.cells[self.selected_row][self.selected_col].fixed {
             return;
         }
- 
-        if self.notes_mode {
-            let cell = self.board.get_mut(
-                self.selected_row,
-                self.selected_col,
-            );
 
-            cell.notes[(digit - 1) as usize] =
-                !cell.notes[(digit - 1) as usize];
+        if self.notes_mode {
+            let cell = self.board.get_mut(self.selected_row, self.selected_col);
+
+            cell.notes[(digit - 1) as usize] = !cell.notes[(digit - 1) as usize];
         } else {
             let mut board = self.board;
             board.cells[self.selected_row][self.selected_col].value = None;
 
-            let is_valid = is_valid_num(
-                &board,
-                digit,
-                self.selected_row,
-                self.selected_col,
-            );
+            let is_valid = is_valid_num(&board, digit, self.selected_row, self.selected_col);
 
-            let cell = self.board.get_mut(
-                self.selected_row,
-                self.selected_col,
-            );
+            let cell = self.board.get_mut(self.selected_row, self.selected_col);
 
             cell.value = Some(digit);
             cell.is_valid = is_valid;
@@ -138,11 +130,7 @@ impl App {
     }
 
     pub fn on_backspace(&mut self) {
-        let cell = Board::get_mut(
-            &mut self.board,
-            self.selected_row,
-            self.selected_col,
-        );
+        let cell = Board::get_mut(&mut self.board, self.selected_row, self.selected_col);
 
         if !cell.fixed {
             cell.value = None;

@@ -1,6 +1,10 @@
-use crossterm::event::{self, Event::{self, Key}, KeyCode};
-use std::time::Duration;
 use crate::app::{App, Screen};
+use crossterm::event::{
+    self,
+    Event::{self, Key},
+    KeyCode,
+};
+use std::time::Duration;
 
 pub fn handle_input(app: &mut App) -> std::io::Result<()> {
     if event::poll(Duration::from_millis(50))? {
@@ -12,8 +16,7 @@ pub fn handle_input(app: &mut App) -> std::io::Result<()> {
                     }
                     _ => {}
                 }
-            }
-            else {
+            } else {
                 match key.code {
                     KeyCode::Up => {
                         if app.selected_row > 0 {

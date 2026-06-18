@@ -1,4 +1,4 @@
-use std::io::{stdout, Stdout};
+use std::io::{Stdout, stdout};
 
 use crossterm::{
     cursor,
@@ -20,21 +20,13 @@ impl Tui {
 
     pub fn enter(&mut self) -> color_eyre::Result<()> {
         crossterm::terminal::enable_raw_mode()?;
-        crossterm::execute!(
-            stdout(),
-            EnterAlternateScreen,
-            cursor::Hide
-        )?;
+        crossterm::execute!(stdout(), EnterAlternateScreen, cursor::Hide)?;
         Ok(())
     }
 
     pub fn exit(&mut self) -> color_eyre::Result<()> {
         if crossterm::terminal::is_raw_mode_enabled()? {
-            crossterm::execute!(
-                stdout(),
-                LeaveAlternateScreen,
-                cursor::Show
-            )?;
+            crossterm::execute!(stdout(), LeaveAlternateScreen, cursor::Show)?;
             crossterm::terminal::disable_raw_mode()?;
         }
         Ok(())

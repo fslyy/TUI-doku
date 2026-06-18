@@ -1,5 +1,5 @@
-use sudokugen::{BoardSize, Puzzle};
 use serde::{Deserialize, Serialize};
+use sudokugen::{BoardSize, Puzzle};
 
 #[derive(Serialize, Deserialize, Clone, Copy, Debug)]
 pub struct Cell {
@@ -11,7 +11,7 @@ pub struct Cell {
 
 #[derive(Serialize, Deserialize, Clone, Copy, Debug)]
 pub struct Board {
-    pub cells: [[Cell;9];9]
+    pub cells: [[Cell; 9]; 9],
 }
 
 impl From<&sudokugen::Board> for Board {
@@ -101,7 +101,6 @@ pub fn generate_board() -> (Board, Board) {
     let solution = Board::from(puzzle.solution());
 
     (board, solution)
-
 }
 
 pub fn solve_board(board: &Board) -> Board {
@@ -115,44 +114,46 @@ pub fn solve_board(board: &Board) -> Board {
             }
         }
     }
-    
+
     let mut solver_board = sudokugen::Board::from(&puzzle);
-    solver_board.solve().unwrap(); 
+    solver_board.solve().unwrap();
     Board::from(&solver_board)
 }
 
 // BOARD LOGIC
-pub fn is_valid_box(board: &Board, value: u8, row: usize, col: usize) -> bool { 
-    for i in 0..3 { 
-        for j in 0..3 { 
-            if (board.cells[row + i][col + j].value == Some(value)) 
-            { return false; } 
-        } 
-    } return true; 
+pub fn is_valid_box(board: &Board, value: u8, row: usize, col: usize) -> bool {
+    for i in 0..3 {
+        for j in 0..3 {
+            if (board.cells[row + i][col + j].value == Some(value)) {
+                return false;
+            }
+        }
+    }
+    return true;
 }
 
-pub fn is_valid_row(board: &Board, value: u8, row: usize) -> bool { 
-    for col in 0..9 { 
-        if board.cells[row][col].value == Some(value) { 
-            return false; 
-        } 
-    } 
-    return true; 
-} 
+pub fn is_valid_row(board: &Board, value: u8, row: usize) -> bool {
+    for col in 0..9 {
+        if board.cells[row][col].value == Some(value) {
+            return false;
+        }
+    }
+    return true;
+}
 
-pub fn is_valid_col(board: &Board, value: u8, col: usize) -> bool { 
-    for row in 0..9 { 
-        if board.cells[row][col].value == Some(value) { 
-            return false; 
-        } 
-    } 
-    return true; 
-} 
+pub fn is_valid_col(board: &Board, value: u8, col: usize) -> bool {
+    for row in 0..9 {
+        if board.cells[row][col].value == Some(value) {
+            return false;
+        }
+    }
+    return true;
+}
 
-pub fn is_valid_num(board: &Board, value: u8, row: usize, col: usize) -> bool { 
-    is_valid_row(board, value, row) && 
-    is_valid_col(board, value, col) && 
-    is_valid_box(board, value, row - row % 3, col - col % 3) 
+pub fn is_valid_num(board: &Board, value: u8, row: usize, col: usize) -> bool {
+    is_valid_row(board, value, row)
+        && is_valid_col(board, value, col)
+        && is_valid_box(board, value, row - row % 3, col - col % 3)
 }
 
 #[test]
@@ -165,5 +166,4 @@ fn test_generate_board() {
     //         dbg!(row, col, board.get(row, col).value, solution.get(row, col).value);
     //     }
     // }
-
 }

@@ -6,8 +6,8 @@ pub fn render(frame: &mut Frame, app: &App) {
     let area = frame.area();
 
     let [_, logo_row, text_area] = Layout::vertical([
-        Constraint::Length(10),  
-        Constraint::Length(10), 
+        Constraint::Length(10),
+        Constraint::Length(10),
         Constraint::Min(0),
     ])
     .areas(area);
@@ -28,14 +28,10 @@ pub fn render(frame: &mut Frame, app: &App) {
         "  ╚══╧══╧══╝   ╚═╝    ╚═════╝ ╚═╝      ╚═════╝  ╚═════╝ ╚═╝  ╚═╝ ╚═════╝ ",
     ];
 
-    let mut prompt = ["[N] New Game", 
-                             "[Q] Quit",
-                             ""];
+    let mut prompt = ["[N] New Game", "[Q] Quit", ""];
 
     if load_game_state().is_ok() {
-        prompt = ["[C] Continue",
-                "[N] New Game", 
-                "[Q] Quit"];
+        prompt = ["[C] Continue", "[N] New Game", "[Q] Quit"];
     }
 
     let buf = frame.buffer_mut();
@@ -45,7 +41,9 @@ pub fn render(frame: &mut Frame, app: &App) {
             logo_area.x + logo_area.width / 2 - 37,
             logo_area.y + i as u16,
             *line,
-            Style::default().fg(app.theme.number_fixed).add_modifier(Modifier::BOLD),
+            Style::default()
+                .fg(app.theme.number_fixed)
+                .add_modifier(Modifier::BOLD),
         );
     }
 
@@ -54,8 +52,7 @@ pub fn render(frame: &mut Frame, app: &App) {
             text_area.x + text_area.width / 2 - 10,
             text_area.y + 2 + i as u16,
             *line,
-            Style::default()
-            .fg(app.theme.number_user),
+            Style::default().fg(app.theme.number_user),
         );
     }
 }

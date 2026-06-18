@@ -1,4 +1,4 @@
-use std::time::{Instant, Duration};
+use std::time::{Duration, Instant};
 
 #[derive(Clone, Copy, Debug)]
 pub struct GameTimer {
