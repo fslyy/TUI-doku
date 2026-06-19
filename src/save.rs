@@ -58,8 +58,8 @@ impl GameSave {
 }
 
 fn save_path() -> PathBuf {
-    let proj_dirs = ProjectDirs::from("dev", "fslyy", "tui-doku")
-        .expect("Failed to determine data directory");
+    let proj_dirs =
+        ProjectDirs::from("dev", "fslyy", "tui-doku").expect("Failed to determine data directory");
 
     proj_dirs.data_dir().join("savegame.json")
 }

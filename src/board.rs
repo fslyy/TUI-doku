@@ -14,6 +14,7 @@ pub struct Board {
     pub cells: [[Cell; 9]; 9],
 }
 
+#[allow(clippy::needless_range_loop)]
 impl From<&sudokugen::Board> for Board {
     fn from(src: &sudokugen::Board) -> Self {
         let mut cells = [[Cell::empty(); 9]; 9];
@@ -37,6 +38,7 @@ impl From<&Board> for sudokugen::Board {
     fn from(src: &Board) -> Self {
         let mut board = sudokugen::Board::new(BoardSize::NineByNine);
 
+        #[allow(clippy::needless_range_loop)]
         for row in 0..9 {
             for col in 0..9 {
                 if let Some(value) = src.cells[row][col].value {
@@ -103,13 +105,14 @@ pub fn generate_board() -> (Board, Board) {
     (board, solution)
 }
 
+#[allow(clippy::needless_range_loop)]
 pub fn solve_board(board: &Board) -> Board {
-    let mut puzzle = board.clone();
+    let mut puzzle = *board;
 
     for row in 0..9 {
         for col in 0..9 {
             let cell = &mut puzzle.cells[row][col];
-            if cell.fixed == false {
+            if !cell.fixed {
                 cell.value = None;
             }
         }
@@ -124,12 +127,12 @@ pub fn solve_board(board: &Board) -> Board {
 pub fn is_valid_box(board: &Board, value: u8, row: usize, col: usize) -> bool {
     for i in 0..3 {
         for j in 0..3 {
-            if (board.cells[row + i][col + j].value == Some(value)) {
+            if board.cells[row + i][col + j].value == Some(value) {
                 return false;
             }
         }
     }
-    return true;
+    true
 }
 
 pub fn is_valid_row(board: &Board, value: u8, row: usize) -> bool {
@@ -138,7 +141,7 @@ pub fn is_valid_row(board: &Board, value: u8, row: usize) -> bool {
             return false;
         }
     }
-    return true;
+    true
 }
 
 pub fn is_valid_col(board: &Board, value: u8, col: usize) -> bool {
@@ -147,7 +150,7 @@ pub fn is_valid_col(board: &Board, value: u8, col: usize) -> bool {
             return false;
         }
     }
-    return true;
+    true
 }
 
 pub fn is_valid_num(board: &Board, value: u8, row: usize, col: usize) -> bool {

@@ -173,7 +173,8 @@ Press P to resume
     frame.render_widget(popup, overlay);
 }
 
-pub fn render_board(frame: &mut Frame, app: &App, area: Rect) {
+#[allow(clippy::needless_range_loop)]
+pub fn render_board(frame: &mut Frame, app: &App, _area: Rect) {
     let visual_board = build_board(app);
 
     let area = frame.area();
@@ -243,7 +244,7 @@ fn draw_background(
     let subgrid_x = col / 3;
     let subgrid_y = row / 3;
 
-    let checker = (subgrid_x + subgrid_y) % 2 == 0;
+    let checker = (subgrid_x + subgrid_y).is_multiple_of(2);
 
     let bg = if cell.selected && cell.is_valid {
         app.theme.bg_selected

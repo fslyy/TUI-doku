@@ -1,7 +1,5 @@
-use crossterm::event::KeyCode::Null;
-
 use crate::board::{Board, Cell, generate_board, is_valid_num, solve_board};
-use crate::save::{self, GameSave, load_game_state, save_game_state};
+use crate::save::{GameSave, load_game_state, save_game_state};
 use crate::timer::GameTimer;
 use crate::ui::theme::Theme;
 
@@ -48,12 +46,19 @@ impl App {
 
     pub fn save_game(&mut self) {
         self.timer.pause();
-        save_game_state(&GameSave::new(
+        match save_game_state(&GameSave::new(
             self.board,
             self.selected_row,
             self.selected_col,
             self.timer.elapsed().as_secs(),
-        ));
+        )) {
+            Ok(()) => {
+                println!("Game saved succesfully")
+            }
+            Err(err) => {
+                println!("{:?}", err.to_string());
+            }
+        }
     }
 
     pub fn load_game(&mut self) {
