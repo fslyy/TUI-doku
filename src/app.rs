@@ -1,10 +1,13 @@
 use crate::board::{Board, Cell, generate_board, is_valid_num, solve_board};
-use crate::save::{GameSave, load_game_state, save_game_state};
+use crate::save::{
+    GameSave, load_game_state, save_game_state, update_and_save_stats,
+};
 use crate::timer::GameTimer;
 use crate::ui::theme::Theme;
 
 pub enum Screen {
     MainMenu,
+    Stats,
     Game,
 }
 
@@ -154,5 +157,6 @@ impl App {
         }
         self.timer.pause();
         self.win = true;
+        let _ = update_and_save_stats(self.timer.elapsed().as_secs());
     }
 }

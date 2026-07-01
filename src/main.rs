@@ -21,11 +21,13 @@ fn main() -> color_eyre::Result<()> {
     while app.running {
         tui.draw(|frame| match app.screen {
             Screen::MainMenu => ui::mainmenu::render(frame, &app),
+            Screen::Stats => ui::stats::render(frame, &app),
             Screen::Game => ui::game::render(frame, &app),
         })?;
 
         match app.screen {
             Screen::MainMenu => input::mainmenu::handle_input(&mut app),
+            Screen::Stats => input::stats::handle_input(&mut app),
             Screen::Game => input::game::handle_input(&mut app),
         }?
     }

@@ -28,10 +28,10 @@ pub fn render(frame: &mut Frame, app: &App) {
         "  ╚══╧══╧══╝   ╚═╝    ╚═════╝ ╚═╝      ╚═════╝  ╚═════╝ ╚═╝  ╚═╝ ╚═════╝ ",
     ];
 
-    let mut prompt = ["[N] New Game", "[Q] Quit", ""];
+    let mut prompt = ["[N] New Game", "[S] Stats", "[Q] Quit", ""];
 
     if load_game_state().is_ok() {
-        prompt = ["[C] Continue", "[N] New Game", "[Q] Quit"];
+        prompt = ["[C] Continue", "[N] New Game", "[S] Stats", "[Q] Quit"];
     }
 
     let buf = frame.buffer_mut();

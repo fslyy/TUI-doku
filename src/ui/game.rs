@@ -45,10 +45,7 @@ pub fn render(frame: &mut Frame, app: &App) {
 
     let chunks = Layout::default()
         .direction(Direction::Horizontal)
-        .constraints([
-            Constraint::Length(70),
-            Constraint::Length(20),
-        ])
+        .constraints([Constraint::Length(70), Constraint::Length(20)])
         .split(content[1]);
 
     render_board(frame, app, chunks[0]);
