@@ -33,10 +33,23 @@ struct CellData {
 }
 
 pub fn render(frame: &mut Frame, app: &App) {
+    // Gesamtbreite der UI (Board + Sidebar)
+    let content = Layout::default()
+        .direction(Direction::Horizontal)
+        .constraints([
+            Constraint::Fill(1),
+            Constraint::Length(90),
+            Constraint::Fill(1),
+        ])
+        .split(frame.area());
+
     let chunks = Layout::default()
         .direction(Direction::Horizontal)
-        .constraints([Constraint::Length(70), Constraint::Min(20)])
-        .split(frame.area());
+        .constraints([
+            Constraint::Length(70),
+            Constraint::Length(20),
+        ])
+        .split(content[1]);
 
     render_board(frame, app, chunks[0]);
     render_sidebar(frame, app, chunks[1]);
@@ -51,7 +64,7 @@ pub fn render_sidebar(frame: &mut Frame, app: &App, area: Rect) {
 
     buf.set_string(
         area.x + 1,
-        area.y + 1,
+        area.y + 3,
         "TUI Doku",
         Style::default()
             .fg(app.theme.number_fixed)
@@ -64,7 +77,7 @@ pub fn render_sidebar(frame: &mut Frame, app: &App, area: Rect) {
 
     buf.set_string(
         area.x + 1,
-        area.y + 3,
+        area.y + 5,
         timer,
         Style::default().fg(app.theme.number_user),
     );
@@ -82,7 +95,7 @@ pub fn render_sidebar(frame: &mut Frame, app: &App, area: Rect) {
     for (i, line) in control_lines.iter().enumerate() {
         buf.set_string(
             area.x + 1,
-            area.y + 5 + i as u16,
+            area.y + 7 + i as u16,
             *line,
             Style::default().fg(app.theme.number_user),
         );
@@ -94,7 +107,7 @@ pub fn render_sidebar(frame: &mut Frame, app: &App, area: Rect) {
     };
     buf.set_string(
         area.x + 1,
-        area.y + 13,
+        area.y + 15,
         notes_text,
         Style::default().fg(app.theme.note),
     );
@@ -174,14 +187,13 @@ Press P to resume
 }
 
 #[allow(clippy::needless_range_loop)]
-pub fn render_board(frame: &mut Frame, app: &App, _area: Rect) {
+pub fn render_board(frame: &mut Frame, app: &App, area: Rect) {
     let visual_board = build_board(app);
 
-    let area = frame.area();
     let buf = frame.buffer_mut();
 
     let board_x = area.x + 2;
-    let board_y = area.y + 1;
+    let board_y = area.y + 3;
 
     for row in 0..9 {
         for col in 0..9 {
