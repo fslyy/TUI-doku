@@ -1,6 +1,6 @@
 use crate::board::{Board, Cell, generate_board, is_valid_num, solve_board};
 use crate::save::{
-    GameSave, load_game_state, save_game_state, update_and_save_stats,
+    GameSave, clear_game_state, load_game_state, save_game_state, update_and_save_stats,
 };
 use crate::timer::GameTimer;
 use crate::ui::theme::Theme;
@@ -55,9 +55,16 @@ impl App {
             self.selected_col,
             self.timer.elapsed().as_secs(),
         )) {
-            Ok(()) => {
-                println!("Game saved succesfully")
+            Ok(()) => {}
+            Err(err) => {
+                println!("{:?}", err.to_string());
             }
+        }
+    }
+
+    pub fn clear_saved_game(&mut self) {
+        match clear_game_state() {
+            Ok(()) => {}
             Err(err) => {
                 println!("{:?}", err.to_string());
             }

@@ -76,15 +76,20 @@ impl StatsSave {
     }
 
     pub fn update_stats(&mut self, time_played: u64) {
-        self.games_played += 1;
-        self.total_time_played += time_played;
-        if self.best_time.unwrap_or(10000) < time_played {
+        if self.best_time.unwrap_or(10000) > time_played {
             self.best_time = Some(time_played);
         }
-        self.average_time = Some(
-            (self.average_time.unwrap_or(0 as f64) * self.games_played as f64 + time_played as f64)
-                / (self.games_played + 1) as f64,
-        );
+        if self.games_played > 0 {
+            self.average_time = Some(
+                (self.average_time.unwrap_or(0 as f64) * self.games_played as f64
+                    + time_played as f64)
+                    / (self.games_played + 1) as f64,
+            )
+        } else {
+            self.average_time = Some(time_played as f64);
+        }
+        self.games_played += 1;
+        self.total_time_played += time_played;
     }
 }
 
@@ -105,6 +110,16 @@ pub fn save_game_state(save: &GameSave) -> Result<(), SaveError> {
     let json = serde_json::to_string_pretty(save)?;
 
     std::fs::write(path, json)?;
+
+    Ok(())
+}
+
+pub fn clear_game_state() -> Result<(), SaveError> {
+    let path = save_path("savegame.json".to_string());
+
+    if path.exists() {
+        std::fs::remove_file(path)?;
+    }
 
     Ok(())
 }

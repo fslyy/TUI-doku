@@ -45,10 +45,17 @@ pub fn handle_input(app: &mut App) -> std::io::Result<()> {
                 KeyCode::Char('q') => {
                     if !app.win {
                         app.save_game();
+                    } else {
+                        app.clear_saved_game()
                     }
                     app.running = false;
                 }
                 KeyCode::Esc => {
+                    if !app.win {
+                        app.save_game();
+                    } else {
+                        app.clear_saved_game()
+                    }
                     app.screen = Screen::MainMenu;
                 }
                 KeyCode::Enter if app.win => {
