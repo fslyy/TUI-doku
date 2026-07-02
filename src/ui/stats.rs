@@ -1,51 +1,84 @@
-use ratatui::{
-    prelude::*,
-    widgets::{Block, Borders, Paragraph},
-};
+use ratatui::prelude::*;
 
-use crate::{
-    app::App,
-    save::{StatsSave, get_stats},
-};
+use crate::app::App;
+use crate::save::get_stats;
 
-pub fn render(frame: &mut Frame, _app: &App) {
-    let lines = match get_stats() {
-        Ok(stats) => build_stats_lines(&stats),
-        Err(err) => vec![
-            Line::from("Statistics"),
-            Line::from(""),
-            Line::from(format!("Failed to load statistics: {}", err)),
-        ],
+pub fn render(frame: &mut Frame, app: &App) {
+    let area = frame.area();
+
+    let [_, heading_row, text_area] = Layout::vertical([
+        Constraint::Length(3),
+        Constraint::Length(8),
+        Constraint::Min(0),
+    ])
+    .areas(area);
+
+    let [_, heading_area, _] = Layout::horizontal([
+        Constraint::Fill(1),
+        Constraint::Length(74),
+        Constraint::Fill(1),
+    ])
+    .areas(heading_row);
+
+    const HEADING: &[&str] = &[
+    "███████╗████████╗ █████╗ ████████╗██╗███████╗████████╗██╗ ██████╗███████╗",
+    "██╔════╝╚══██╔══╝██╔══██╗╚══██╔══╝██║██╔════╝╚══██╔══╝██║██╔════╝██╔════╝",
+    "███████╗   ██║   ███████║   ██║   ██║███████╗   ██║   ██║██║     ███████╗",
+    "╚════██║   ██║   ██╔══██║   ██║   ██║╚════██║   ██║   ██║██║     ╚════██║",
+    "███████║   ██║   ██║  ██║   ██║   ██║███████║   ██║   ██║╚██████╗███████║",
+    "╚══════╝   ╚═╝   ╚═╝  ╚═╝   ╚═╝   ╚═╝╚══════╝   ╚═╝   ╚═╝ ╚═════╝╚══════╝",
+    ];
+
+    let stats = get_stats().ok();
+
+    let lines = if let Some(stats) = stats {
+        vec![
+            format!("Games played    : {}", stats.games_played),
+            format!("Play time       : {}", format_time(stats.total_time_played)),
+            format!(
+                "Best time       : {}",
+                stats.best_time
+                    .map(format_time)
+                    .unwrap_or_else(|| "-".to_string())
+            ),
+            format!(
+                "Average time    : {}",
+                stats.average_time
+                    .map(|t| format_time(t as u64))
+                    .unwrap_or_else(|| "-".to_string())
+            ),
+            String::new(),
+            "[Esc] Back".to_string(),
+        ]
+    } else {
+        vec![
+            "Failed to load statistics.".to_string(),
+            String::new(),
+            "[Esc] Back".to_string(),
+        ]
     };
 
-    let paragraph =
-        Paragraph::new(lines).block(Block::default().title("Statistics").borders(Borders::ALL));
+    let buf = frame.buffer_mut();
 
-    frame.render_widget(paragraph, frame.area());
-}
+    for (i, line) in HEADING.iter().enumerate() {
+        buf.set_string(
+            heading_area.x + heading_area.width / 2 - 36,
+            heading_area.y + i as u16,
+            *line,
+            Style::default()
+                .fg(app.theme.number_fixed)
+                .add_modifier(Modifier::BOLD),
+        );
+    }
 
-fn build_stats_lines(stats: &StatsSave) -> Vec<Line<'static>> {
-    vec![
-        Line::from(format!("Games played: {}", stats.games_played)),
-        Line::from(format!(
-            "Total play time: {} min",
-            format_time(stats.total_time_played)
-        )),
-        Line::from(format!(
-            "Best time: {}",
-            stats
-                .best_time
-                .map(format_time)
-                .unwrap_or_else(|| "-".to_string())
-        )),
-        Line::from(format!(
-            "Average time: {}",
-            stats
-                .average_time
-                .map(|t| format_time(t as u64))
-                .unwrap_or_else(|| "-".to_string())
-        )),
-    ]
+    for (i, line) in lines.iter().enumerate() {
+        buf.set_string(
+            text_area.x + text_area.width / 2 - 15,
+            text_area.y + 2 + i as u16,
+            line,
+            Style::default().fg(app.theme.number_user),
+        );
+    }
 }
 
 fn format_time(seconds: u64) -> String {
