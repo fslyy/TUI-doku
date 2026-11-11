@@ -1,7 +1,9 @@
+use std::time::Duration;
+
 use ratatui::prelude::*;
 
 use crate::app::App;
-use crate::save::get_stats;
+use crate::save::stats::get_stats;
 
 pub fn render(frame: &mut Frame, app: &App) {
     let area = frame.area();
@@ -34,17 +36,17 @@ pub fn render(frame: &mut Frame, app: &App) {
     let lines = if let Some(stats) = stats {
         vec![
             format!("Games played    : {}", stats.games_played),
-            format!("Play time       : {}", format_time(stats.total_time_played)),
+            format!("Play time       : {}", super::format_duration(Duration::from_secs(stats.total_time_played))),
             format!(
                 "Best time       : {}",
                 stats.best_time
-                    .map(format_time)
+                    .map(|t| super::format_duration(Duration::from_secs(t as u64)))
                     .unwrap_or_else(|| "-".to_string())
             ),
             format!(
                 "Average time    : {}",
                 stats.average_time
-                    .map(|t| format_time(t as u64))
+                    .map(|t| super::format_duration(Duration::from_secs(t as u64)))
                     .unwrap_or_else(|| "-".to_string())
             ),
             String::new(),
@@ -79,8 +81,4 @@ pub fn render(frame: &mut Frame, app: &App) {
             Style::default().fg(app.theme.number_user),
         );
     }
-}
-
-fn format_time(seconds: u64) -> String {
-    format!("{:02}:{:02}", seconds / 60, seconds % 60)
 }

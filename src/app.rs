@@ -1,7 +1,10 @@
+use std::process::exit;
+
 use crate::board::{Board, Cell, generate_board, is_valid_num, solve_board};
-use crate::save::{
-    GameSave, clear_game_state, load_game_state, save_game_state, update_and_save_stats,
+use crate::save::game::{
+    GameSave, clear_game_state, load_game_state, save_game_state,
 };
+use crate::save::stats::update_and_save_stats;
 use crate::timer::GameTimer;
 use crate::ui::theme::Theme;
 
@@ -129,17 +132,22 @@ impl App {
             cell.notes[(digit - 1) as usize] = !cell.notes[(digit - 1) as usize];
         } else {
             let mut board = self.board;
+            let prev_digit = board.cells[self.selected_row][self.selected_col].value.unwrap_or(0);
             board.cells[self.selected_row][self.selected_col].value = None;
-
-            let is_valid = is_valid_num(&board, digit, self.selected_row, self.selected_col);
-
+            
             let cell = self.board.get_mut(self.selected_row, self.selected_col);
+            
+            if prev_digit == digit {
+                cell.value = None;
+                cell.is_valid = true;
+            } else {
+                let is_valid = is_valid_num(&board, digit, self.selected_row, self.selected_col);
+                cell.value = Some(digit);
+                cell.is_valid = is_valid;
 
-            cell.value = Some(digit);
-            cell.is_valid = is_valid;
-
-            if Board::is_complete(&self.board) {
-                self.check_win();
+                if Board::is_complete(&self.board) {
+                    self.check_win();
+                }
             }
         }
     }

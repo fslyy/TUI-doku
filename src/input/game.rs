@@ -1,11 +1,8 @@
 use crate::app::{App, Screen};
-use crossterm::event::{self, Event, KeyCode};
-use std::time::Duration;
+use crossterm::event::KeyCode;
 
 pub fn handle_input(app: &mut App) -> std::io::Result<()> {
-    if event::poll(Duration::from_millis(50))?
-        && let Event::Key(key) = event::read()?
-    {
+    if let Some(key) = super::read_key()? {
         if app.game_paused {
             match key.code {
                 KeyCode::Char('p') | KeyCode::Esc => {

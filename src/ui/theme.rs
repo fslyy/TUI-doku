@@ -27,14 +27,14 @@ impl Default for Theme {
 
             bg_grid_highlight: Color::Rgb(60, 60, 60),
             bg_num_highlight: Color::Rgb(90, 90, 90),
-            bg_selected: Color::Rgb(110, 110, 110),
+            bg_selected: Color::Rgb(120, 120, 120),
 
             bg_invalid: Color::Rgb(120, 20, 20),
 
             number_fixed: Color::Cyan,
             number_user: Color::White,
 
-            note: Color::DarkGray,
+            note: Color::Rgb(180, 180, 180),
         }
     }
 }

@@ -32,8 +32,6 @@ fn main() -> color_eyre::Result<()> {
         }?
     }
 
-    //TO-DO: persistent game safe (save board state )
-
     let _ = tui.exit();
 
     Ok(())

@@ -1,16 +1,9 @@
 use crate::app::{App, Screen};
-use crate::save::load_game_state;
-use crossterm::event::{
-    self,
-    Event::{self},
-    KeyCode,
-};
-use std::time::Duration;
+use crate::save::game::load_game_state;
+use crossterm::event::KeyCode;
 
 pub fn handle_input(app: &mut App) -> std::io::Result<()> {
-    if event::poll(Duration::from_millis(50))?
-        && let Event::Key(key) = event::read()?
-    {
+    if let Some(key) = super::read_key()? {
         match key.code {
             KeyCode::Char('c') if load_game_state().is_ok() => {
                 app.load_game();

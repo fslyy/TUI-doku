@@ -1,6 +1,6 @@
 use ratatui::prelude::*;
 
-use crate::{app::App, save::load_game_state};
+use crate::{app::App, save::game::load_game_state};
 
 pub fn render(frame: &mut Frame, app: &App) {
     let area = frame.area();
