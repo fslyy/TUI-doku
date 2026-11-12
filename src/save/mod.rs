@@ -1,9 +1,9 @@
 pub mod game;
 pub mod stats;
 
+use directories::ProjectDirs;
 use std::path::PathBuf;
 use std::{fmt, io};
-use directories::ProjectDirs;
 
 #[derive(Debug)]
 pub enum SaveError {

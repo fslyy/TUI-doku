@@ -1,5 +1,8 @@
-use ratatui::{prelude::*, widgets::{Block, Borders, Paragraph}};
 use crate::app::App;
+use ratatui::{
+    prelude::*,
+    widgets::{Block, Borders, Paragraph},
+};
 
 pub fn render_pause_overlay(frame: &mut Frame, app: &App) {
     let area = frame.area();

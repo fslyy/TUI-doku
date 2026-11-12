@@ -85,14 +85,7 @@ impl Board {
     }
 
     pub fn is_complete(&self) -> bool {
-        for row in 0..9 {
-            for col in 0..9 {
-                if self.cells[row][col].value.is_none() {
-                    return false;
-                }
-            }
-        }
-        true
+        self.cells.iter().flatten().all(|cell| cell.value.is_some())
     }
 }
 
@@ -105,18 +98,15 @@ pub fn generate_board() -> (Board, Board) {
     (board, solution)
 }
 
-#[allow(clippy::needless_range_loop)]
 pub fn solve_board(board: &Board) -> Board {
     let mut puzzle = *board;
 
-    for row in 0..9 {
-        for col in 0..9 {
-            let cell = &mut puzzle.cells[row][col];
-            if !cell.fixed {
-                cell.value = None;
-            }
-        }
-    }
+    puzzle
+        .cells
+        .iter_mut()
+        .flatten()
+        .filter(|cell| !cell.fixed)
+        .for_each(|cell| cell.value = None);
 
     let mut solver_board = sudokugen::Board::from(&puzzle);
     solver_board.solve().unwrap();
@@ -136,21 +126,13 @@ pub fn is_valid_box(board: &Board, value: u8, row: usize, col: usize) -> bool {
 }
 
 pub fn is_valid_row(board: &Board, value: u8, row: usize) -> bool {
-    for col in 0..9 {
-        if board.cells[row][col].value == Some(value) {
-            return false;
-        }
-    }
-    true
+    board.cells[row]
+        .iter()
+        .all(|cell| cell.value != Some(value))
 }
 
 pub fn is_valid_col(board: &Board, value: u8, col: usize) -> bool {
-    for row in 0..9 {
-        if board.cells[row][col].value == Some(value) {
-            return false;
-        }
-    }
-    true
+    board.cells.iter().all(|row| row[col].value != Some(value))
 }
 
 pub fn is_valid_num(board: &Board, value: u8, row: usize, col: usize) -> bool {

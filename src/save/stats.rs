@@ -1,6 +1,6 @@
+use super::{SaveError, save_path};
 use serde::{Deserialize, Serialize};
 use std::fs;
-use super::{SaveError, save_path};
 
 #[derive(Copy, Clone, Serialize, Deserialize)]
 pub struct StatsSave {

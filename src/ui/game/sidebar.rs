@@ -1,6 +1,6 @@
-use ratatui::{layout::Rect, prelude::*};
 use crate::app::App;
 use crate::ui::format_duration;
+use ratatui::{layout::Rect, prelude::*};
 
 pub fn render_sidebar(frame: &mut Frame, app: &App, area: Rect) {
     let buf = frame.buffer_mut();

@@ -1,4 +1,7 @@
-use crate::app::{App, Screen};
+use crate::{
+    app::{App, Screen},
+    board::{Board, is_valid_num},
+};
 use crossterm::event::KeyCode;
 
 pub fn handle_input(app: &mut App) -> std::io::Result<()> {
@@ -25,12 +28,17 @@ pub fn handle_input(app: &mut App) -> std::io::Result<()> {
                     app.selected_col += 1;
                 }
                 KeyCode::Backspace => {
-                    app.on_backspace();
+                    let cell = Board::get_mut(&mut app.board, app.selected_row, app.selected_col);
+
+                    if !cell.fixed {
+                        cell.value = None;
+                        cell.is_valid = true;
+                    }
                 }
                 KeyCode::Char(c) if c.is_ascii_digit() => {
                     let digit = c.to_digit(10).unwrap() as u8;
                     if (1..=9).contains(&digit) {
-                        app.on_digit(c);
+                        on_digit(app, c);
                     }
                 }
                 KeyCode::Char('n') => {
@@ -63,4 +71,39 @@ pub fn handle_input(app: &mut App) -> std::io::Result<()> {
         }
     }
     Ok(())
+}
+
+fn on_digit(app: &mut App, c: char) {
+    let digit = c.to_digit(10).unwrap() as u8;
+
+    if app.board.cells[app.selected_row][app.selected_col].fixed {
+        return;
+    }
+
+    if app.notes_mode {
+        let cell = app.board.get_mut(app.selected_row, app.selected_col);
+
+        cell.notes[(digit - 1) as usize] = !cell.notes[(digit - 1) as usize];
+    } else {
+        let mut board = app.board;
+        let prev_digit = board.cells[app.selected_row][app.selected_col]
+            .value
+            .unwrap_or(0);
+        board.cells[app.selected_row][app.selected_col].value = None;
+
+        let cell = app.board.get_mut(app.selected_row, app.selected_col);
+
+        if prev_digit == digit {
+            cell.value = None;
+            cell.is_valid = true;
+        } else {
+            let is_valid = is_valid_num(&board, digit, app.selected_row, app.selected_col);
+            cell.value = Some(digit);
+            cell.is_valid = is_valid;
+
+            if Board::is_complete(&app.board) {
+                app.check_win();
+            }
+        }
+    }
 }

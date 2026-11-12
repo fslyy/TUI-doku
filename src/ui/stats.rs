@@ -23,12 +23,12 @@ pub fn render(frame: &mut Frame, app: &App) {
     .areas(heading_row);
 
     const HEADING: &[&str] = &[
-    "███████╗████████╗ █████╗ ████████╗██╗███████╗████████╗██╗ ██████╗███████╗",
-    "██╔════╝╚══██╔══╝██╔══██╗╚══██╔══╝██║██╔════╝╚══██╔══╝██║██╔════╝██╔════╝",
-    "███████╗   ██║   ███████║   ██║   ██║███████╗   ██║   ██║██║     ███████╗",
-    "╚════██║   ██║   ██╔══██║   ██║   ██║╚════██║   ██║   ██║██║     ╚════██║",
-    "███████║   ██║   ██║  ██║   ██║   ██║███████║   ██║   ██║╚██████╗███████║",
-    "╚══════╝   ╚═╝   ╚═╝  ╚═╝   ╚═╝   ╚═╝╚══════╝   ╚═╝   ╚═╝ ╚═════╝╚══════╝",
+        "███████╗████████╗ █████╗ ████████╗██╗███████╗████████╗██╗ ██████╗███████╗",
+        "██╔════╝╚══██╔══╝██╔══██╗╚══██╔══╝██║██╔════╝╚══██╔══╝██║██╔════╝██╔════╝",
+        "███████╗   ██║   ███████║   ██║   ██║███████╗   ██║   ██║██║     ███████╗",
+        "╚════██║   ██║   ██╔══██║   ██║   ██║╚════██║   ██║   ██║██║     ╚════██║",
+        "███████║   ██║   ██║  ██║   ██║   ██║███████║   ██║   ██║╚██████╗███████║",
+        "╚══════╝   ╚═╝   ╚═╝  ╚═╝   ╚═╝   ╚═╝╚══════╝   ╚═╝   ╚═╝ ╚═════╝╚══════╝",
     ];
 
     let stats = get_stats().ok();
@@ -36,16 +36,21 @@ pub fn render(frame: &mut Frame, app: &App) {
     let lines = if let Some(stats) = stats {
         vec![
             format!("Games played    : {}", stats.games_played),
-            format!("Play time       : {}", super::format_duration(Duration::from_secs(stats.total_time_played))),
+            format!(
+                "Play time       : {}",
+                super::format_duration(Duration::from_secs(stats.total_time_played))
+            ),
             format!(
                 "Best time       : {}",
-                stats.best_time
-                    .map(|t| super::format_duration(Duration::from_secs(t as u64)))
+                stats
+                    .best_time
+                    .map(|t| super::format_duration(Duration::from_secs(t)))
                     .unwrap_or_else(|| "-".to_string())
             ),
             format!(
                 "Average time    : {}",
-                stats.average_time
+                stats
+                    .average_time
                     .map(|t| super::format_duration(Duration::from_secs(t as u64)))
                     .unwrap_or_else(|| "-".to_string())
             ),

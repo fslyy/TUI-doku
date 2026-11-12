@@ -1,6 +1,6 @@
 pub mod board;
-pub mod sidebar;
 pub mod pause;
+pub mod sidebar;
 
 use ratatui::prelude::*;
 

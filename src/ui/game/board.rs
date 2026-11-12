@@ -1,6 +1,6 @@
-use ratatui::{buffer::Buffer, layout::Rect, prelude::*};
+use super::{CELL_HEIGHT, CELL_WIDTH, CellData, NOTE_POSITIONS};
 use crate::app::App;
-use super::{CELL_WIDTH, CELL_HEIGHT, NOTE_POSITIONS, CellData};
+use ratatui::{buffer::Buffer, layout::Rect, prelude::*};
 
 #[allow(clippy::needless_range_loop)]
 pub fn render_board(frame: &mut Frame, app: &App, area: Rect) {
