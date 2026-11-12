@@ -12,6 +12,7 @@ pub struct Theme {
     pub bg_invalid: Color,
 
     pub number_fixed: Color,
+    pub number_complete: Color,
     pub number_user: Color,
 
     pub note: Color,
@@ -32,6 +33,7 @@ impl Default for Theme {
             bg_invalid: Color::Rgb(120, 20, 20),
 
             number_fixed: Color::Cyan,
+            number_complete: Color::Magenta,
             number_user: Color::White,
 
             note: Color::Rgb(180, 180, 180),

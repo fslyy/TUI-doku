@@ -141,6 +141,16 @@ pub fn is_valid_num(board: &Board, value: u8, row: usize, col: usize) -> bool {
         && is_valid_box(board, value, row - row % 3, col - col % 3)
 }
 
+pub fn is_complete_num(board: &Board, value: u8) -> bool {
+    board
+        .cells
+        .iter()
+        .flatten()
+        .filter(|cell| cell.value == Some(value))
+        .count()
+        == 9
+}
+
 #[test]
 fn test_generate_board() {
     let (board, solution) = generate_board();

@@ -1,5 +1,5 @@
 use super::{CELL_HEIGHT, CELL_WIDTH, CellData, NOTE_POSITIONS};
-use crate::app::App;
+use crate::{app::App, board::is_complete_num};
 use ratatui::{buffer::Buffer, layout::Rect, prelude::*};
 
 #[allow(clippy::needless_range_loop)]
@@ -114,7 +114,11 @@ fn draw_big_number(app: &App, buf: &mut Buffer, area: Rect, value: u8, fixed: bo
     let x = area.x + area.width / 2;
     let y = area.y + area.height / 2;
 
-    let fg = if fixed {
+    let fg = if is_complete_num(&app.board, value)
+        && app.board.cells[app.selected_row][app.selected_col].value == Some(value)
+    {
+        app.theme.number_complete
+    } else if fixed {
         app.theme.number_fixed
     } else {
         app.theme.number_user
