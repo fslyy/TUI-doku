@@ -60,8 +60,7 @@ impl Board {
     }
 
     pub fn is_complete_num(&self, value: u8) -> bool {
-        self
-            .cells
+        self.cells
             .iter()
             .flatten()
             .filter(|cell| cell.value == Some(value))
