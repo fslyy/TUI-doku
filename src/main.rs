@@ -1,5 +1,6 @@
 mod app;
 mod board;
+mod board_new;
 mod input;
 mod save;
 mod timer;

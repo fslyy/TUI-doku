@@ -87,6 +87,15 @@ impl Board {
     pub fn is_complete(&self) -> bool {
         self.cells.iter().flatten().all(|cell| cell.value.is_some())
     }
+
+    pub fn is_complete_num(&self, value: u8) -> bool {
+        self.cells
+            .iter()
+            .flatten()
+            .filter(|cell| cell.value == Some(value))
+            .count()
+            == 9
+    }
 }
 
 pub fn generate_board() -> (Board, Board) {
@@ -139,16 +148,6 @@ pub fn is_valid_num(board: &Board, value: u8, row: usize, col: usize) -> bool {
     is_valid_row(board, value, row)
         && is_valid_col(board, value, col)
         && is_valid_box(board, value, row - row % 3, col - col % 3)
-}
-
-pub fn is_complete_num(board: &Board, value: u8) -> bool {
-    board
-        .cells
-        .iter()
-        .flatten()
-        .filter(|cell| cell.value == Some(value))
-        .count()
-        == 9
 }
 
 #[test]
