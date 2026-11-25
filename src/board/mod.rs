@@ -49,6 +49,35 @@ impl Board {
         &mut self.cells[row][col]
     }
 
+    pub fn set_all_values_fixed(&mut self) {
+        self.cells
+            .iter_mut()
+            .flatten()
+            .filter(|cell| cell.value.is_some())
+            .for_each(|cell| cell.fixed = true);
+    }
+
+    pub fn get_num_of_filled_cells(&self) -> usize {
+        self.cells
+            .iter()
+            .flatten()
+            .filter(|cell| cell.value.is_some())
+            .count()
+    }
+
+    pub fn get_cells_as_str(&self) -> String {
+        self.cells
+            .iter()
+            .map(|row| {
+                row.iter()
+                    .map(|&cell| format!("{}", cell.value.unwrap_or(0)))
+                    .collect::<Vec<String>>()
+                    .join(", ")
+            })
+            .collect::<Vec<String>>()
+            .join("\n")
+    }
+
     pub fn get_cell_from_index(&mut self, index: usize) -> &mut Cell {
         let row = index / 9;
         let col = index % 9;

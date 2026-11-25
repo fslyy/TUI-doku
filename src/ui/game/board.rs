@@ -1,5 +1,5 @@
 use super::{CELL_HEIGHT, CELL_WIDTH, CellData, NOTE_POSITIONS};
-use crate::{app::App, board::Board};
+use crate::app::App;
 use ratatui::{buffer::Buffer, layout::Rect, prelude::*};
 
 #[allow(clippy::needless_range_loop)]

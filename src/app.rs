@@ -1,4 +1,6 @@
-use crate::board::{Board, Cell, generate_board, solve_board};
+use crate::board::{
+    Board, Cell, generator::Difficulty, generator::generate_board, solver::solve_board,
+};
 use crate::save::game::{GameSave, clear_game_state, load_game_state, save_game_state};
 use crate::save::stats::update_and_save_stats;
 use crate::timer::GameTimer;
@@ -74,7 +76,9 @@ impl App {
         match load_game_state() {
             Ok(save) => {
                 self.board = save.board;
-                self.solution = solve_board(&save.board);
+                let mut solution = save.board;
+                solve_board(&mut solution);
+                self.solution = solution;
 
                 self.selected_col = save.selected_col;
                 self.selected_row = save.selected_row;
@@ -93,7 +97,8 @@ impl App {
     }
 
     pub fn start_game(&mut self) {
-        let (board, solution) = generate_board();
+        // TO-DO: extra ui screen for selecting difficulty -> then maybe also different stats depending on difficulty
+        let (board, solution) = generate_board(Difficulty::Medium);
         self.board = board;
         self.solution = solution;
         self.screen = Screen::Game;

@@ -17,7 +17,6 @@ rand = "0.10.3"
 ratatui = { version = "0.30.0", features = ["serde", "macros"] }
 serde = { version = "1.0.211", features = ["derive"] }
 serde_json = "1.0.132"
-sudokugen = "0.4.0"
 
 [build-dependencies]
 anyhow = "1.0.90"

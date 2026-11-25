@@ -1,6 +1,6 @@
 use crate::{
     app::{App, Screen},
-    board::{Board, is_valid_num},
+    board::{Board, check::is_valid_num},
 };
 use crossterm::event::KeyCode;
 
